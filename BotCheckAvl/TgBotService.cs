@@ -13,7 +13,15 @@ public class TgBotService : BackgroundService
     {
         _settings = options.Value;
         _logger = logger;
-        _botClient = new TelegramBotClient(_settings.Token);
+        try
+        {
+            _botClient = new TelegramBotClient(_settings.Token);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to initialize TelegramBotClient with provided token.");
+            throw;
+        }
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
