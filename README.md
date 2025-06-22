@@ -20,6 +20,7 @@ BotCheckAvl is a Telegram bot designed to monitor the availability and health of
 
 - All configuration (timeouts, retry counts, etc.) can be managed via the bot's interactive menu.
 - Service URLs and their statuses are stored and managed by the bot.
+- The `appsettings.json` file now includes a `TgBot` section. Set your Telegram bot token in `TgBot:Token` and optionally a `WebhookUrl`.
 
 ## Use Cases
 
@@ -29,7 +30,7 @@ BotCheckAvl is a Telegram bot designed to monitor the availability and health of
 
 ## Getting Started
 
-1. Clone the repository and configure your bot token and initial settings.
+1. Clone the repository and edit `appsettings.json` to provide your bot token in the `TgBot` section.
 2. Run the application using .NET 9.0.
 3. Interact with the bot in Telegram to add, remove, or manage services.
 

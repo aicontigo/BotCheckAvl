@@ -15,6 +15,11 @@ class Program
                 logging.AddConsole();
                 logging.SetMinimumLevel(ParseLogLevel(logLevel));
             })
+            .ConfigureServices((context, services) =>
+            {
+                services.Configure<TgBotSettings>(context.Configuration.GetSection("TgBot"));
+                services.AddHostedService<TgBotService>();
+            })
             .Build();
 
         var config = host.Services.GetRequiredService<IConfiguration>();
