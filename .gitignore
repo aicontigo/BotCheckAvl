@@ -24,3 +24,4 @@ appsettings.Production.json
 
 # Rider
 .cursor/
+/BotCheckAvl/.vs/
