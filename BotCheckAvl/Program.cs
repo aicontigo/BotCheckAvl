@@ -22,5 +22,6 @@ class Program
 
         logger.LogInformation($"Starting {Assembly.GetExecutingAssembly().GetName().Name} in {env.EnvironmentName} environment");
 
+        await host.RunAsync();
     }
 }
