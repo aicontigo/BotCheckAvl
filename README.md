@@ -34,6 +34,20 @@ BotCheckAvl is a Telegram bot designed to monitor the availability and health of
 2. Run the application using .NET 9.0.
 3. Interact with the bot in Telegram to add, remove, or manage services.
 
+## Database Migrations
+
+Entity Framework Core with SQLite is used for data storage. After changing the
+model, create and apply migrations:
+
+```bash
+dotnet tool install --global dotnet-ef   # once
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
+
+The default SQLite database file is `botcheckavl.db` as configured in
+`appsettings.json`.
+
 ---
 
 **Note:** This project is under active development. Contributions and feedback are welcome! 
