@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using BotCheckAvl.Services;
 using Telegram.Bot;
 
 public class TgBotService : BackgroundService
@@ -8,11 +9,16 @@ public class TgBotService : BackgroundService
     private readonly ILogger<TgBotService> _logger;
     private readonly TgBotSettings _settings;
     private readonly TelegramBotClient _botClient;
+    private readonly MonitoringService _monitoringService;
 
-    public TgBotService(IOptions<TgBotSettings> options, ILogger<TgBotService> logger)
+    public TgBotService(
+        IOptions<TgBotSettings> options,
+        ILogger<TgBotService> logger,
+        MonitoringService monitoringService)
     {
         _settings = options.Value;
         _logger = logger;
+        _monitoringService = monitoringService;
         try
         {
             _botClient = new TelegramBotClient(_settings.Token);
@@ -29,7 +35,9 @@ public class TgBotService : BackgroundService
         _logger.LogInformation("TgBotService is starting");
         while (!stoppingToken.IsCancellationRequested)
         {
-            // Placeholder for bot logic. In a real bot, you'd handle updates here.
+            // Demo database access
+            var services = await _monitoringService.GetServicesAsync(0);
+            _logger.LogDebug($"Loaded {services.Count} services from DB");
             await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
         }
         _logger.LogInformation("TgBotService is stopping");
