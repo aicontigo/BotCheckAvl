@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using BotCheckAvl.Services;
 
 // Local types (in project namespace-less files)
 
@@ -17,7 +18,7 @@ class Program
                 services.Configure<TgBotSettings>(context.Configuration.GetSection("TgBot"));
                 services.AddDbContext<BotDbContext>(options =>
                     options.UseSqlite(context.Configuration.GetConnectionString("Default")));
-                services.AddTransient<MonitoringService>();
+                services.AddTransient<IBotDataService, BotDataService>();
                 services.AddHostedService<TgBotService>();
             })
             .Build();

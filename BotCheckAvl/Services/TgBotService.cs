@@ -1,7 +1,8 @@
+using BotCheckAvl.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using BotCheckAvl.Services;
 using Telegram.Bot;
 
 public class TgBotService : BackgroundService
@@ -9,16 +10,18 @@ public class TgBotService : BackgroundService
     private readonly ILogger<TgBotService> _logger;
     private readonly TgBotSettings _settings;
     private readonly TelegramBotClient _botClient;
-    private readonly MonitoringService _monitoringService;
+    private readonly IServiceScopeFactory _scopeFactory;
+
+    private IBotDataService _monitoringService;
 
     public TgBotService(
         IOptions<TgBotSettings> options,
         ILogger<TgBotService> logger,
-        MonitoringService monitoringService)
+        IServiceScopeFactory scopeFactory)
     {
         _settings = options.Value;
         _logger = logger;
-        _monitoringService = monitoringService;
+        _scopeFactory = scopeFactory;
         try
         {
             _botClient = new TelegramBotClient(_settings.Token);
@@ -33,12 +36,27 @@ public class TgBotService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("TgBotService is starting");
+
+        //TEMP!!!
+        using var scope = _scopeFactory.CreateScope();
+        _monitoringService = scope.ServiceProvider.GetRequiredService<IBotDataService>();
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            // Demo database access
-            var services = await _monitoringService.GetServicesAsync(0);
-            _logger.LogDebug($"Loaded {services.Count} services from DB");
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            try
+            {
+                // Demo database access
+                var services = await _monitoringService.GetServices(0, stoppingToken);
+                _logger.LogDebug($"Loaded {services.Count} services from DB");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical("Cannot get the service list from DB");
+            }
+            finally
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            }
         }
         _logger.LogInformation("TgBotService is stopping");
     }
