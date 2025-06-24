@@ -4,6 +4,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
+using Telegram.Bot.Polling;
+using Telegram.Bot.Types;
 
 public class TgBotService : BackgroundService
 {
@@ -11,15 +13,13 @@ public class TgBotService : BackgroundService
     private readonly TgBotSettings _settings;
     private readonly TelegramBotClient _botClient;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly TgBotConnector _connector;
 
     private IBotDataService _monitoringService;
 
     public TgBotService(
         IOptions<TgBotSettings> options,
         ILogger<TgBotService> logger,
-        IServiceScopeFactory scopeFactory,
-        ILogger<TgBotConnector> connectorLogger)
+        IServiceScopeFactory scopeFactory)
     {
         _settings = options.Value;
         _logger = logger;
@@ -27,7 +27,6 @@ public class TgBotService : BackgroundService
         try
         {
             _botClient = new TelegramBotClient(_settings.Token);
-            _connector = new TgBotConnector(_botClient, connectorLogger);
         }
         catch (Exception ex)
         {
@@ -40,7 +39,7 @@ public class TgBotService : BackgroundService
     {
         _logger.LogInformation("TgBotService is starting");
 
-        _connector.Start(stoppingToken);
+        StartBot(stoppingToken);
 
         //TEMP!!!
         using var scope = _scopeFactory.CreateScope();
@@ -64,5 +63,30 @@ public class TgBotService : BackgroundService
             }
         }
         _logger.LogInformation("TgBotService is stopping");
+    }
+
+    public void StartBot(CancellationToken cancellationToken)
+    {
+        var receiverOptions = new ReceiverOptions();
+        _botClient.StartReceiving(HandleUpdateAsync, HandleErrorAsync, receiverOptions, cancellationToken);
+        _logger.LogInformation("TgBotConnector started receiving updates");
+    }
+
+    public Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken ct)
+    {
+        _logger.LogInformation("Received update of type {Type}", update.Type);
+        if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
+        {
+            _logger.LogInformation($"Received message '{update.Message.Text}' from {update.Message.Chat.Username}");
+            botClient.SendMessage(update.Message.Chat.Id, update.Message.Text);
+        }
+        // TODO: handle messages
+        return Task.CompletedTask;
+    }
+
+    public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken ct)
+    {
+        _logger.LogError(exception, "Telegram bot error");
+        return Task.CompletedTask;
     }
 }
