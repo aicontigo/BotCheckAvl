@@ -46,12 +46,12 @@ public class TgBotService : BackgroundService
             try
             {
                 // Demo database access
-                var services = await _monitoringService.GetServices(0, stoppingToken);
+                var services = await _monitoringService.GetServices(500, stoppingToken);
                 _logger.LogDebug($"Loaded {services.Count} services from DB");
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("Cannot get the service list from DB");
+                _logger.LogCritical("Cannot get the service list from DB: {exception}", ex);
             }
             finally
             {
