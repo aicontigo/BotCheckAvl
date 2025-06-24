@@ -1,4 +1,5 @@
 using BotCheckAvl.Services;
+using BotCheckAvl.Services.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -72,16 +73,41 @@ public class TgBotService : BackgroundService
         _logger.LogInformation("TgBotConnector started receiving updates");
     }
 
-    public Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken ct)
+    public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken ct)
     {
         _logger.LogInformation("Received update of type {Type}", update.Type);
         if (update.Type == Telegram.Bot.Types.Enums.UpdateType.Message)
         {
             _logger.LogInformation($"Received message '{update.Message.Text}' from {update.Message.Chat.Username}");
-            botClient.SendMessage(update.Message.Chat.Id, update.Message.Text);
+
+            var command = update.Message!.Text?.Trim().ToLowerInvariant() switch
+            {
+                "add service" => Commands.BotCommand.AddService,
+                "disable service" => Commands.BotCommand.DisableService,
+                "enable service" => Commands.BotCommand.EnableService,
+                "delete service" => Commands.BotCommand.DeleteService,
+                "show service" => Commands.BotCommand.ShowService,
+                "show all" => Commands.BotCommand.ShowAll,
+                "check service" => Commands.BotCommand.CheckService,
+                _ => (Commands.BotCommand?)null
+            };
+
+            if (command.HasValue)
+            {
+                var handler = Commands.CommandHandlerFactory.Create(command.Value);
+                var result = await handler.HandleCommand(ct);
+                var response = result.IsSuccess
+                    ? result.SuccessMessage ?? "Command executed"
+                    : (result.Errors.Count > 0 ? string.Join("; ", result.Errors) : "Command failed");
+                await botClient.SendTextMessageAsync(update.Message.Chat, response, cancellationToken: ct);
+            }
+            else
+            {
+                await botClient.SendTextMessageAsync(update.Message.Chat, "Unknown command", cancellationToken: ct);
+            }
         }
-        // TODO: handle messages
-        return Task.CompletedTask;
+        // TODO: handle other update types
+        return;
     }
 
     public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken ct)
