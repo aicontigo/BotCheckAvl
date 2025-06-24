@@ -1,6 +1,6 @@
 namespace BotCheckAvl.Services.Commands
 {
-    public enum BotCommand
+    public enum BotCommandEnum
     {
         AddService,
         DisableService,

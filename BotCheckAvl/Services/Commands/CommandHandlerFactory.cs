@@ -4,17 +4,17 @@ namespace BotCheckAvl.Services.Commands
 {
     public static class CommandHandlerFactory
     {
-        public static CommandHandlerBase Create(BotCommand command)
+        public static CommandHandlerBase Create(BotCommandEnum command)
         {
             return command switch
             {
-                BotCommand.AddService => new AddServiceHandler(),
-                BotCommand.DisableService => new DisableServiceHandler(),
-                BotCommand.EnableService => new EnableServiceHandler(),
-                BotCommand.DeleteService => new DeleteServiceHandler(),
-                BotCommand.ShowService => new ShowServiceHandler(),
-                BotCommand.ShowAll => new ShowAllHandler(),
-                BotCommand.CheckService => new CheckServiceHandler(),
+                BotCommandEnum.AddService => new AddServiceHandler(),
+                BotCommandEnum.DisableService => new DisableServiceHandler(),
+                BotCommandEnum.EnableService => new EnableServiceHandler(),
+                BotCommandEnum.DeleteService => new DeleteServiceHandler(),
+                BotCommandEnum.ShowService => new ShowServiceHandler(),
+                BotCommandEnum.ShowAll => new ShowAllHandler(),
+                BotCommandEnum.CheckService => new CheckServiceHandler(),
                 _ => throw new ArgumentOutOfRangeException(nameof(command), command, null)
             };
         }

@@ -82,28 +82,28 @@ public class TgBotService : BackgroundService
 
             var command = update.Message!.Text?.Trim().ToLowerInvariant() switch
             {
-                "add service" => Commands.BotCommand.AddService,
-                "disable service" => Commands.BotCommand.DisableService,
-                "enable service" => Commands.BotCommand.EnableService,
-                "delete service" => Commands.BotCommand.DeleteService,
-                "show service" => Commands.BotCommand.ShowService,
-                "show all" => Commands.BotCommand.ShowAll,
-                "check service" => Commands.BotCommand.CheckService,
-                _ => (Commands.BotCommand?)null
+                "add service" => BotCommandEnum.AddService,
+                "disable service" => BotCommandEnum.DisableService,
+                "enable service" => BotCommandEnum.EnableService,
+                "delete service" => BotCommandEnum.DeleteService,
+                "show service" => BotCommandEnum.ShowService,
+                "show all" => BotCommandEnum.ShowAll,
+                "check service" => BotCommandEnum.CheckService,
+                _ => (BotCommandEnum?)null
             };
 
             if (command.HasValue)
             {
-                var handler = Commands.CommandHandlerFactory.Create(command.Value);
+                var handler = CommandHandlerFactory.Create(command.Value);
                 var result = await handler.HandleCommand(ct);
                 var response = result.IsSuccess
                     ? result.SuccessMessage ?? "Command executed"
                     : (result.Errors.Count > 0 ? string.Join("; ", result.Errors) : "Command failed");
-                await botClient.SendTextMessageAsync(update.Message.Chat, response, cancellationToken: ct);
+                await botClient.SendMessage(update.Message.Chat, response, cancellationToken: ct);
             }
             else
             {
-                await botClient.SendTextMessageAsync(update.Message.Chat, "Unknown command", cancellationToken: ct);
+                await botClient.SendMessage(update.Message.Chat, "Unknown command", cancellationToken: ct);
             }
         }
         // TODO: handle other update types

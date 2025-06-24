@@ -5,7 +5,7 @@ namespace BotCheckAvl.Services.Commands
 {
     public class ShowServiceHandler : CommandHandlerBase
     {
-        public override BotCommand Command => BotCommand.ShowService;
+        public override BotCommandEnum Command => BotCommandEnum.ShowService;
 
         public override Task<CommandResult> HandleCommand(CancellationToken ct, params string[] arguments)
         {
