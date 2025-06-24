@@ -11,13 +11,15 @@ public class TgBotService : BackgroundService
     private readonly TgBotSettings _settings;
     private readonly TelegramBotClient _botClient;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly TgBotConnector _connector;
 
     private IBotDataService _monitoringService;
 
     public TgBotService(
         IOptions<TgBotSettings> options,
         ILogger<TgBotService> logger,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        ILogger<TgBotConnector> connectorLogger)
     {
         _settings = options.Value;
         _logger = logger;
@@ -25,6 +27,7 @@ public class TgBotService : BackgroundService
         try
         {
             _botClient = new TelegramBotClient(_settings.Token);
+            _connector = new TgBotConnector(_botClient, connectorLogger);
         }
         catch (Exception ex)
         {
@@ -36,6 +39,8 @@ public class TgBotService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("TgBotService is starting");
+
+        _connector.Start(stoppingToken);
 
         //TEMP!!!
         using var scope = _scopeFactory.CreateScope();
